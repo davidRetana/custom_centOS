@@ -2,7 +2,7 @@
 Modificación de una imagen de CentOS para albergar un cluster Hadoop
 
 27/12/2016
-version de SO: centOS 6.7
+    version de SO: centOS 6.7 (valido para versiones superiores tambien)
 
 #######################################################################################
 ############################## CONFIGURACION DE RED ###################################
@@ -11,24 +11,24 @@ version de SO: centOS 6.7
 > dhclient eth0 => Solicitamos una direccion IP al adaptador de red eth0
 > ping google.com => probamos si funciona la conexion
 
-# Esto que hemos hecho ha sido pedirle una IP al servidor DHCP y este nos ha asignado
-# una dinamicamente. Si queremos hacerlo fijo debemos tocar los siguientes ficheros:
- ==> /etc/sysconfig/network-scripts/ifcfg-eth0
+Esto que hemos hecho ha sido pedirle una IP al servidor DHCP y este nos ha asignado
+una dinamicamente. Si queremos hacerlo fijo debemos tocar los siguientes ficheros:
+> vi /etc/sysconfig/network-scripts/ifcfg-eth0
      Modificar la linea ONBOOT=YES
      Añadir las siguientes lineas
        IPADDR=10.164.77.163 (la IP que nos haya dado en ifconfig)
        BOOTPRO=static
        NETMASK=255.255.255.0
 
- ==> /etc/sysconfig/network
+> vi /etc/sysconfig/network
      Modificar las siguientes lineas: 
        HOSTNAME=localhost (el nombre de la maquina)
 
- ==> /etc/resolv.conf
+> vi /etc/resolv.conf
      No hemos modificado nada y funciona correctamente
 
 Ahora reiniciamos la configuracion de red
-/etc/init.d/network restart
+> /etc/init.d/network restart
 
 #####################################################################################
 ################################ USUARIOS DEL SISTEMA ###############################
