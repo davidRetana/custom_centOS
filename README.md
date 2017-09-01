@@ -1,8 +1,9 @@
 # custom_centOS
 Modificación de una imagen de CentOS para albergar un cluster Hadoop
 
+
 27/12/2016
-    version de SO: centOS 6.7 (valido para versiones superiores tambien)
+version de SO: centOS 6.7
 
 #######################################################################################
 ############################## CONFIGURACION DE RED ###################################
@@ -45,17 +46,22 @@ Ahora reiniciamos la configuracion de red
 
 # Deshabilitar el firewall
 > service iptables stop ==> paramos el servicio
+
 > chkconfig iptables off  ==> para que cuando reiniciemos no se vuelva a activar
+
 
 # Deshabilitar selinux
 > /usr/sbin/getenforce  ==> comporbar si esta habilitado
+
 > vi /etc/selinux/config
     modificar la linea => SELINUX=disabled
+
 > reboot  ==> reiniciamos la maquina para que haga efecto
 
 # Desabilitar el swappiness
 > vi /etc/sysctl.conf
     añadir la linea => vw.swappiness=1
+
 
 # Deshabilitar THP (Transparent Huge Page)
 > vi /etc/rc.local (añadimos el siguiente contenido)
@@ -68,30 +74,46 @@ Ahora reiniciamos la configuracion de red
    fi
 > echo never > /sys/kernel/mm/transparent_hugepage/defrag  ==> lo desactivamos
 
+
 # Instalar cliente NTP para la sincronizacion de relojes
 > yum install ntp ntpdate ntp-doc  ==> Instalamos los paquetes necesarios
+
 > chkconfig ntpd on  ==> lo hacemos permanente aunque reiniciemos la maquina
+
 > ntpdate es.pool.ntp.org  ==> cogemos la hora del servidor (en España)
+
 > /etc/init.d/ntpd start  ==> arrancamos el servicio
+
 > ntpstat  ==> comprobamos que funciona correctamente
+
 
 # Descargamos el repositorio de Cloudera (CDH)
 > yum update
+
 > yum install wget
+
 > OPCIONAL => yum install man ==> manual de los comandos en la propia maquina
+
 > wget https://archive.cloudera.com/cdh5/one-click-install/redhat/6/x86_64/cloudera-cdh-5-0.x86_64.rpm
     ==> nos descargamos el repositorio oficial de cloudera
+
 > yum --nogpgcheck localinstall cloudera-cdh-5-0.x86_64.rpm  ==> añadimos cloudera a los repositorios de yum
+
 > vi /etc/yum.repos.d/cloudera-cdh5.repo  ==> modificamos la version de CHD a la deseada
      baseurl=http://archive.cloudera.com/cdh5/redhat/6/x86_64/cdh/X.X.X (5.8.2)
+
 > yum clean all  ==> limpiamos la cache de yum
+
 > rm -f cloudera-cdh-5-0.x86_64.rpm  ==> eliminamos el archivo descargado
 
 # Descargamos el repositorio del Cloudera Manager
 > wget https://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo
+
 > vi cloudera-manager.repo  ==> abrimos el archivo y modificamos la siguiente linea:
         baseurl=https://archive.cloudera.com/cm5/redhat/6/x86_64/cm/5.8.2/
+
 > mv cloudera-manager.repo /etc/yum.repos.d/  ==> movemos el archivo a la ruta de los repositorios
+
 
 #??????????????????????????????????????????????????
 > vi /etc/gdm/custom.conf  ==> añadir las siguientes lineas
@@ -99,18 +121,25 @@ Ahora reiniciamos la configuracion de red
      AutomaticLoginEnable=true
      AutomaticLogin=training
 
+
 # Instalacion de Java 7 (JDK 7)
 > wget -O - --no-cookies --no-check-certificate --header "Cookie: \
   gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" \
   "http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.rpm" > \
   jdk-7u79-linux-x64.rpm  ==>  nos descargamos el archivo de instalacion de Java
+
 > yum localinstall --assumeyes jdk-7u79-linux-x64.rpm  ==> instalamos el jdk de Java
+
 > java -version  ==> comprobamos que la instalacion se ha realizado correctamente
+
 > rm -f jdk-7u79-linux-x64.rpm  ==> eliminamos el archivo
+
 
 # Instalacion de MySQL
 > yum install mysql-server  ==> Instalamos el servidor de MySQL
+
 > /sbin/service mysqld start  ==> Arrancamos el demonio
+
 > /usr/bin/mysql_secure_installation  ==> Lanzamos el proceso de instalacion
     Enter current password for root (enter for none): (Lo dejamos en blanco)
     Set root password? [Y/n] (damos a Y)
@@ -120,8 +149,11 @@ Ahora reiniciamos la configuracion de red
     Disallow root login remotely? [Y/n] n
     Remove test database and access to it? [Y/n] n
     Reload privilege tables now? [Y/n] Y
+
 > sudo chkconfig mysqld on  ==> Establecemos el arranque automático al iniciar la maquina
+
 > mysql -uroot -ptraining  ==> comprobamos que todo funciona correctamente
+
 > vi /etc/my.cnf  ==> modificamos el fichero y le dejamos asi:
         [mysqld]
         transaction-isolation = READ-COMMITTED
@@ -172,7 +204,9 @@ Ahora reiniciamos la configuracion de red
         pid-file=/var/run/mysqld/mysqld.pid
 
         sql_mode=STRICT_ALL_TABLES
+
 > /sbin/service mysqld restart
+
 POSIBLES ERRORES AL REINICIAR Y TROUBLESHOOTING  (se ven en /var/log/mysqld.log)
 ==> Fatal Error: cannot allocate the memory for the buffer pool
      solucion ==> rebajar la memoria en /etc/my.cnf
@@ -183,14 +217,20 @@ POSIBLES ERRORES AL REINICIAR Y TROUBLESHOOTING  (se ven en /var/log/mysqld.log)
 > mysql -uroot -ptraining
   > show engines  ==> ver que InnoDB esta como motor por defecto
 
+
 # Descargamos el driver JDBC de MySQL
 http://www.mysql.com/downloads/connector/j/5.1.html  ==> lo debemos descargar desde la pagina y luego copiarlo
 a la maquina con pscp o MobaXterm, copiarlo a /root
 > yum install zip unzip  ==> para poder comprimir y descomprimir archivos
+
 > unzip mysql-connector-java-5.1.40.zip  ==> descomprimimos el archivo
+
 > mkdir /usr/share/java  ==> creamos el directorio
+
 > mv mysql-connector-java-5.1.40/mysql-connector-java-5.1.40-bin.jar /usr/share/java/  ==> movemos el jar al directorio
+
 > rm -rf mysql-connector-java-5.1.40 mysql-connector-java-5.1.40.zip  ==> eliminamos los archivos para que no ocupen
+
 > mv /usr/share/java/mysql-connector-java-5.1.40-bin.jar /usr/share/java/mysql-connector-java.jar ==> 
                                           Modificamos el nombre del driver JDBC y le quitamos la versión -- crear un link
 
